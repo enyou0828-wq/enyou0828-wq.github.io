@@ -3,11 +3,24 @@
 <head>
 <meta name=viewport content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<script type="text/javascript" src="experiments.js"></script>
-<script type="text/javascript" src="handler.js"></script>
-<script type="text/javascript" nonce="firebase-auth-helper">
+<script>
+// 交易日誌自己的 Google 登入（state 以 tj_ 開頭）：把 Google 回傳的 #id_token 存起來直接回 App，
+// 不經過 Firebase 的導向轉接（iPhone Safari 收不到那條路的結果）。其他情況照常交給 Firebase。
+(function () {
+  var h = location.hash.slice(1);
+  if (/(^|&)state=tj_/.test(h)) {
+    try { localStorage.setItem('tj-google-oauth', h); } catch (e) {}
+    window.TJ_OAUTH = true;
+    location.replace('/trading-journal/');
+  }
+})();
+if (!window.TJ_OAUTH) {
+  document.write('<script src="experiments.js"><\/script><script src="handler.js"><\/script>');
+}
+</script>
+<script nonce="firebase-auth-helper">
 var POST_BODY = '{{POST_BODY}}';
-fireauth.oauthhelper.widget.initialize();
+if (!window.TJ_OAUTH) fireauth.oauthhelper.widget.initialize();
 </script>
 </head>
 <body>
